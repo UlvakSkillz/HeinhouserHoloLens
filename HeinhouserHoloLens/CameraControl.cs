@@ -37,6 +37,7 @@ namespace HeinhouserHoloLens
             CameraSettings.cameraPositionFalloff = cameraPositionFalloff;
             CameraSettings.cameraPositionBuffer = cameraPositionBuffer;
             CameraSettings.allowedHeightScaler = allowedHeightScaler;
+           
         }
 
         internal static string SettingsToString()

@@ -7,4 +7,5 @@ using BuildInfo = HeinhouserHoloLens.BuildInfo;
 [assembly: MelonColor(255, 195, 0, 255)]
 [assembly: MelonAuthorColor(255, 195, 0, 255)]
 [assembly: VerifyLoaderVersion(0, 7, 2, true)]
+[assembly: MelonAdditionalDependencies("UIFramework")]
 
