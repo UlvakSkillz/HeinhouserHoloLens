@@ -75,8 +75,26 @@ namespace HeinhouserHoloLens
 			MelonPreferences.OnPreferencesSaved.Subscribe(Save);
 
 
-
+			StoreLastSavedPrefs();
 		}
+
+
+		internal static List<object> PrevSavedPrefs = new();
+
+		internal static void StoreLastSavedPrefs()
+		{
+			var prefs = new List<MelonPreferences_Entry> = new();
+			prefs.AddRange(HoloLensCategory.Entries);
+			prefs.AddRange(ParkSpectateCategory.Entries);
+			prefs.AddRange(CameraMovementCategory.Entries);
+			prefs.AddRange(CameraPositionCategory.Entries);
+
+			foreach (MelonPreferences_Entry entry in  prefs)
+			{
+				PrevSavedPrefs.Add(entry.BoxedValue);
+			}
+		}
+
 		private static void Save(string categoryPath)
 		{
 		//	if (!categoryPath.Contains("HeinhouserHoloLens"))
