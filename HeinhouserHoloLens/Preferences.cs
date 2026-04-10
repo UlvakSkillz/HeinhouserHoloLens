@@ -28,6 +28,16 @@ namespace HeinhouserHoloLens
         internal static MelonPreferences_Entry<float> PrefCamPosBuffer;
         internal static MelonPreferences_Entry<float> PrefAllowedHeightScaler;
 
+        internal void InitPrefs()
+        {
+            if (!Directory.Exists(USER_DATA))
+				Directory.CreateDirectory(USER_DATA);
 
+            HoloLensCategory = MelonPreferences.CreateCategory("HoloLens", "Settings");
+            HoloLensCategory.SetFilePath(Path.Combine(USER_DATA, CONFIG_FILE));
+
+            
+
+        }
     }
 }
