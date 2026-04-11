@@ -10,49 +10,23 @@ using UnityEngine;
 
 namespace HeinhouserHoloLens
 {
-    internal static class CameraSettings
-    {
-        internal static int parkPlayer1 = 0;
-        internal static int parkPlayer2 = 1;
-        internal static float cameraMoveSpeed = 6.5f;
-        internal static float cameraOrbitSpeed = 6f;
-        internal static float cameraPositionCorrectionScaler = 0.01f;
-        internal static float cameraDistanceFromMapCenterAllowed = 10.25f;
-        internal static float playerCenterSmoothing = 6f;
-        internal static float cameraPositionIncrease = 2f;
-        internal static float cameraPositionFalloff = 0.25f;
-        internal static float cameraPositionBuffer = 0.1f;
-        internal static float allowedHeightScaler = 1.5f;
+	internal static class CameraSettings
+	{
+		internal static string SettingsToString()
+		{
+			return $"{(Core.isMatchmaking ? $"player1 = 0, player2 = 1, " : (Core.currentScene == "Park" ? $"parkPlayer1 = {Preferences.PrefParkPlayer1}, parkPlayer2 = {Preferences.PrefParkPlayer2}, " : ""))}"
+				+ $"cameraMoveSpeed = {Preferences.PrefCameraMoveSpeed}"
+				+ $", cameraOrbitSpeed = {Preferences.PrefCameraOrbitSpeed}"
+				+ $", cameraPositionCorrectionScaler = {Preferences.PrefCamPosCorrection}"
+				+ $", CameraDistanceFromMapCenterAllowed = {Preferences.PrefMaxCenterDist}"
+				+ $", playerCenterSmoothing = {Preferences.PrefPlayerCenterSmoothing}"
+				+ $", cameraPositionIncrease = {Preferences.PrefCamPosIncrease}"
+				+ $", cameraPositionFalloff = {Preferences.PrefCamPosFalloff}"
+				+ $", cameraPositionBuffer = {Preferences.PrefCamPosBuffer}"
+				+ $", allowedHeightScaler = {Preferences.PrefAllowedHeightScaler}";
+		}
+	}
 
-        internal static void SetStats(int parkPlayer1, int parkPlayer2, float cameraMoveSpeed, float cameraOrbitSpeed, float cameraPositionCorrectionScaler, float cameraDistanceFromMapCenterAllowed, float playerCenterSmoothing, float cameraPositionIncrease, float cameraPositionFalloff, float cameraPositionBuffer, float allowedHeightScaler)
-        {
-            CameraSettings.parkPlayer1 = parkPlayer1;
-            CameraSettings.parkPlayer2 = parkPlayer2;
-            CameraSettings.cameraMoveSpeed = cameraMoveSpeed;
-            CameraSettings.cameraOrbitSpeed = cameraOrbitSpeed;
-            CameraSettings.cameraPositionCorrectionScaler = cameraPositionCorrectionScaler;
-            CameraSettings.cameraDistanceFromMapCenterAllowed = cameraDistanceFromMapCenterAllowed;
-            CameraSettings.playerCenterSmoothing = playerCenterSmoothing;
-            CameraSettings.cameraPositionIncrease = cameraPositionIncrease;
-            CameraSettings.cameraPositionFalloff = cameraPositionFalloff;
-            CameraSettings.cameraPositionBuffer = cameraPositionBuffer;
-            CameraSettings.allowedHeightScaler = allowedHeightScaler;
-        }
-
-        internal static string SettingsToString()
-        {
-            return $"{(Core.isMatchmaking ? $"player1 = 0, player2 = 1, " : (Core.currentScene == "Park" ? $"parkPlayer1 = {parkPlayer1}, parkPlayer2 = {parkPlayer2}, " : ""))}"
-                + $"cameraMoveSpeed = {cameraMoveSpeed}"
-                + $", cameraOrbitSpeed = {cameraOrbitSpeed}"
-                + $", cameraPositionCorrectionScaler = {cameraPositionCorrectionScaler}"
-                + $", CameraDistanceFromMapCenterAllowed = {cameraDistanceFromMapCenterAllowed}"
-                + $", playerCenterSmoothing = {playerCenterSmoothing}"
-                + $", cameraPositionIncrease = {cameraPositionIncrease}"
-                + $", cameraPositionFalloff = {cameraPositionFalloff}"
-                + $", cameraPositionBuffer = {cameraPositionBuffer}"
-                + $", allowedHeightScaler = {allowedHeightScaler}";
-        }
-    }
 
     internal class CameraControl
     {
@@ -77,25 +51,25 @@ namespace HeinhouserHoloLens
             }
         }
 
-        [HarmonyPatch(typeof(LCKTabletUtility), nameof(LCKTabletUtility.OnRecordingStopped), new Type[] { typeof(LckResult) })]
-        public static class LCKTabletUtilityOnRecordingStoppedPatch
-        {
-            //runs after the player stops recording
-            private static void Postfix(LckResult result)
-            {
-                IsRecording = false;
-                UpdateRecordingLens();
-            }
-        }
+		[HarmonyPatch(typeof(LCKTabletUtility), nameof(LCKTabletUtility.OnRecordingStopped), new Type[] { typeof(LckResult) })]
+		public static class LCKTabletUtilityOnRecordingStoppedPatch
+		{
+			//runs after the player stops recording
+			private static void Postfix(LckResult result)
+			{
+				IsRecording = false;
+				UpdateRecordingLens();
+			}
+		}
 
-        internal static void OnLateInitializeMelon()
-        {
-            //load and instantiate the GameObject in the asset bundle because it will be deloaded by the API automatically
-            ddolHoloLens = GameObject.Instantiate(AssetBundles.LoadAssetFromStream<GameObject>(Core.instance, "HeinhouserHoloLens.hololens", "HoloLens"));
-            ddolHoloLens.name = "HoloLens";
-            ddolHoloLens.SetActive(false);
-            GameObject.DontDestroyOnLoad(ddolHoloLens);
-        }
+		internal static void OnLateInitializeMelon()
+		{
+			//load and instantiate the GameObject in the asset bundle because it will be deloaded by the API automatically
+			ddolHoloLens = GameObject.Instantiate(AssetBundles.LoadAssetFromStream<GameObject>(Core.instance, "HeinhouserHoloLens.hololens", "HoloLens"));
+			ddolHoloLens.name = "HoloLens";
+			ddolHoloLens.SetActive(false);
+			GameObject.DontDestroyOnLoad(ddolHoloLens);
+		}
 
 		internal static void OnSceneWasLoaded() { cameraIsBeingControlled = false; } //immediately stops all camera controls on scene load
 
@@ -107,101 +81,57 @@ namespace HeinhouserHoloLens
                 ddolHoloLens.transform.GetChild(0).GetChild(3).GetComponent<MeshRenderer>().material = GameObjects.Gym.TUTORIAL.Worldtutorials.CombatCarvings.CombatCarvingPosture.CarvingHeadParent.PostureCarvingHead.TposePlayer.GetGameObject().GetComponent<MeshRenderer>().material;
                 grabbedMaterial = true;
             }
-            if (Core.modEnabled && Core.isMatchmaking) { StartSpectate(); }
-            else if (Core.modEnabled && Core.revertTo1stPerson && (Core.currentScene == "Gym")) { PlayerManager.instance.localPlayer.Controller.PlayerLIV.LckTablet.lckCameraController.CameraModeChanged(CameraMode.FirstPerson); }
+            if (Preferences.PrefEnable.Value && Core.isMatchmaking) { StartSpectate(); }
+            else if (Preferences.PrefEnable.Value && Preferences.PrefRevertToFps.Value && (Core.currentScene == "Gym")) { PlayerManager.instance.localPlayer.Controller.PlayerLIV.LckTablet.lckCameraController.CameraModeChanged(CameraMode.FirstPerson); }
         }
 
-		internal static void Save(bool holoLensEnabledChanged, bool showCameraInGameChanged, bool parkSpectateActiveChanged)
-		{
-            //store old values to check if they changed since last save
-            //No longer needed. Old Values are stored after settings have been saved
-            int oldPlayer1 = Preferences.PrefParkPlayer1.Value;
-            int oldPlayer2 = Preferences.PrefParkPlayer2.Value;
-            float oldCameraMoveSpeed = CameraSettings.cameraMoveSpeed;
-            float oldCameraOrbitSpeed = CameraSettings.cameraOrbitSpeed;
-            float oldCameraPositionCorrectionScaler = Preferences.PrefCamPosCorrection.Value;
-            float oldCameraDistanceFromMapCenterAllowed = Preferences.PrefMaxCenterDist.Value;
-            float oldPlayerCenterSmoothing = CameraSettings.playerCenterSmoothing;
-            float oldCameraPositionIncrease = CameraSettings.cameraPositionIncrease;
-            float oldCameraPositionFalloff = CameraSettings.cameraPositionFalloff;
-            float oldCameraPositionBuffer = CameraSettings.cameraPositionBuffer;
-            float oldAllowedHeightScaler = CameraSettings.allowedHeightScaler;
+        internal static void Save(bool holoLensEnabledChanged, bool showCameraInGameChanged, bool parkSpectateActiveChanged)
+        {
 
+			bool playersChanged = Preferences.IsPrefChanged(Preferences.PrefParkPlayer1) || Preferences.IsPrefChanged(Preferences.PrefParkPlayer2);
 
+			//check if any of the camera settings changed since last save
+			bool settingsChanged = Preferences.AnyPrefsChanged();
 
-            //update values
-            CameraSettings.SetStats(
-                (int)Core.settings[4].SavedValue,
-                (int)Core.settings[5].SavedValue,
-                (float)Core.settings[6].SavedValue,
-                (float)Core.settings[7].SavedValue,
-                (float)Core.settings[8].SavedValue,
-                (float)Core.settings[9].SavedValue,
-                (float)Core.settings[10].SavedValue,
-                (float)Core.settings[11].SavedValue,
-                (float)Core.settings[12].SavedValue,
-                (float)Core.settings[13].SavedValue,
-                (float)Core.settings[14].SavedValue);
-            Core.settings[15].SavedValue = Math.Clamp((int)Core.settings[15].SavedValue, 0, 100);
-            Core.settings[15].Value = (int)Core.settings[15].SavedValue;
-            headShotPercent = (int)Core.settings[15].SavedValue;
-
-            //check if the players to watch changed since last save
-            bool playersChanged =
-                (oldPlayer1 != CameraSettings.parkPlayer1)
-                || (oldPlayer2 != CameraSettings.parkPlayer2);
-
-            //check if any of the camera settings changed since last save
-            bool settingsChanged =
-                (oldCameraMoveSpeed != CameraSettings.cameraMoveSpeed)
-                || (oldCameraOrbitSpeed != CameraSettings.cameraOrbitSpeed)
-                || (oldCameraPositionCorrectionScaler != CameraSettings.cameraPositionCorrectionScaler)
-                || (oldCameraDistanceFromMapCenterAllowed != CameraSettings.cameraDistanceFromMapCenterAllowed)
-                || (oldPlayerCenterSmoothing != CameraSettings.playerCenterSmoothing)
-                || (oldCameraPositionIncrease != CameraSettings.cameraPositionIncrease)
-                || (oldCameraPositionFalloff != CameraSettings.cameraPositionFalloff)
-                || (oldCameraPositionBuffer != CameraSettings.cameraPositionBuffer)
-                || (oldAllowedHeightScaler != CameraSettings.allowedHeightScaler);
-
-            if (settingsChanged)
-            {//if camera settings changed, restart spectator camera to apply new settings if currently spectating
-                if (Core.modEnabled && Core.isMatchmaking && cameraIsBeingControlled) { StartSpectate(); }
-                else if (Core.modEnabled && cameraIsBeingControlled && (Core.currentScene == "Park")) { StartSpectate(CameraSettings.parkPlayer1, CameraSettings.parkPlayer2); }
-            }
-            else
-            {//if settings are the same
-                if (Core.isMatchmaking) //and we are in matchmaking
-                {
-                    //if the show camera in game setting changed, create/destroy the holo lens as needed
-                    if (Core.modEnabled && showCameraInGameChanged)
-                    {
-                        if (Core.showHoloLensInGame && (activeHoloLens == null)) { CreateHoloLens(); }
-                        else if (!Core.showHoloLensInGame && (activeHoloLens != null))
-                        {
-                            GameObject.Destroy(activeHoloLens);
-                            activeHoloLens = null;
-                        }
-                    }
-                    //if the holo lens enabled setting changed, start/stop spectating as needed
-                    if (holoLensEnabledChanged)
-                    {
-                        if (Core.modEnabled) { StartSpectate(); }
-                        else { cameraIsBeingControlled = false; }
-                    }
-                }
-                else if (Core.currentScene == "Park") //and we are in the park
-                {
-                    //if the players to watch changed, start spectating with new players
-                    if (playersChanged && Core.parkSpectateActive && Core.modEnabled) { StartSpectate(CameraSettings.parkPlayer1, CameraSettings.parkPlayer2); }
-                    //if the park spectate active setting changed, start/stop spectating as needed
-                    if (parkSpectateActiveChanged)
-                    {
-                        if (Core.parkSpectateActive) { StartSpectate(CameraSettings.parkPlayer1, CameraSettings.parkPlayer2); }
-                        else { cameraIsBeingControlled = false; }
-                    }
-                }
-            }
-        }
+			if (settingsChanged)
+			{//if camera settings changed, restart spectator camera to apply new settings if currently spectating
+				if (Preferences.PrefEnable.Value && Core.isMatchmaking && cameraIsBeingControlled) { StartSpectate(); }
+				else if (Preferences.PrefEnable.Value && cameraIsBeingControlled && (Core.currentScene == "Park")) { StartSpectate(Preferences.PrefParkPlayer1.Value, Preferences.PrefParkPlayer2.Value); }
+			}
+			else
+			{//if settings are the same
+				if (Core.isMatchmaking) //and we are in matchmaking
+				{
+					//if the show camera in game setting changed, create/destroy the holo lens as needed
+					if (Preferences.PrefEnable.Value && showCameraInGameChanged)
+					{
+						if (Preferences.PrefShowInGame.Value && (activeHoloLens == null)) { CreateHoloLens(); }
+						else if (!Preferences.PrefShowInGame.Value && (activeHoloLens != null))
+						{
+							GameObject.Destroy(activeHoloLens);
+							activeHoloLens = null;
+						}
+					}
+					//if the holo lens enabled setting changed, start/stop spectating as needed
+					if (holoLensEnabledChanged)
+					{
+						if (Preferences.PrefEnable.Value) { StartSpectate(); }
+						else { cameraIsBeingControlled = false; }
+					}
+				}
+				else if (Core.currentScene == "Park") //and we are in the park
+				{
+					//if the players to watch changed, start spectating with new players
+					if (playersChanged && Preferences.PrefParkSpectate.Value && Preferences.PrefEnable.Value) { StartSpectate(Preferences.PrefParkPlayer1.Value, Preferences.PrefParkPlayer2.Value); }
+					//if the park spectate active setting changed, start/stop spectating as needed
+					if (parkSpectateActiveChanged)
+					{
+						if (Preferences.PrefParkSpectate.Value) { StartSpectate(Preferences.PrefParkPlayer1.Value, Preferences.PrefParkPlayer2.Value); }
+						else { cameraIsBeingControlled = false; }
+					}
+				}
+			}
+		}
 
         private static void UpdateRecordingLens()
         {
@@ -260,17 +190,17 @@ namespace HeinhouserHoloLens
             yield break;
         }
 
-        //THE Coroutine that actually controls the camera
-        private static IEnumerator RunSpectateCamera(int player1 = 0, int player2 = 1)
-        {
-            Melon<Core>.Logger.Msg($"Playing Spectate Mode: {CameraSettings.SettingsToString()}");
-            //turn off for a tick in case of another camera control is being done
-            if (cameraIsBeingControlled)
-            {
-                cameraIsBeingControlled = false;
-                yield return new WaitForFixedUpdate();
-            }
-            cameraIsBeingControlled = true;
+		//THE Coroutine that actually controls the camera
+		private static IEnumerator RunSpectateCamera(int player1 = 0, int player2 = 1)
+		{
+			Melon<Core>.Logger.Msg($"Playing Spectate Mode: {CameraSettings.SettingsToString()}");
+			//turn off for a tick in case of another camera control is being done
+			if (cameraIsBeingControlled)
+			{
+				cameraIsBeingControlled = false;
+				yield return new WaitForFixedUpdate();
+			}
+			cameraIsBeingControlled = true;
 
             //setup variables
             Transform selectedPlayer1 = PlayerManager.instance.AllPlayers.Count > player1 ? PlayerManager.instance.AllPlayers[player1].Controller.transform.FindChild("Visuals/Skelington/Bone_Pelvis/Bone_Spine_A/Bone_Chest") : PlayerManager.instance.localPlayer.Controller.transform.FindChild("Visuals/Skelington/Bone_Pelvis/Bone_Spine_A/Bone_Chest");
@@ -288,7 +218,7 @@ namespace HeinhouserHoloLens
             //setup initializations
             camera.SetParent(null);
             bool isOrbitingRight = true;
-            if (Core.showHoloLensInGame) { CreateHoloLens(); }
+            if (Preferences.PrefShowInGame.Value) { CreateHoloLens(); }
 
             //mimick current location
             cameraRotationControl.position = camera.position;
@@ -302,48 +232,48 @@ namespace HeinhouserHoloLens
                 remoteDistance = Vector3.Distance(camera.position, selectedPlayer2.position);
                 playerCenterLerpSpot = remoteDistance / (localDistance + remoteDistance);
                 Vector3 rawPlayersCenter = Vector3.Lerp(selectedPlayer2.position, selectedPlayer1.position, playerCenterLerpSpot);
-                smoothedPlayersCenter = Vector3.Lerp(smoothedPlayersCenter, rawPlayersCenter, CameraSettings.playerCenterSmoothing * Time.fixedDeltaTime);
+                smoothedPlayersCenter = Vector3.Lerp(smoothedPlayersCenter, rawPlayersCenter, Preferences.PrefPlayerCenterSmoothing.Value * Time.fixedDeltaTime);
 
                 //new variable calculations
                 float distanceToPlayersCenter = Vector3.Distance(smoothedPlayersCenter, camera.position);
                 float distanceToCenter;
                 float baseDistance = Vector3.Distance(selectedPlayer1.position, selectedPlayer2.position) / 2f;
-                float scaledIncrease = CameraSettings.cameraPositionIncrease / (1f + baseDistance * CameraSettings.cameraPositionFalloff);
+                float scaledIncrease = Preferences.PrefCamPosIncrease.Value / (1f + baseDistance * Preferences.PrefCamPosFalloff.Value);
                 float idealCameraDistance = baseDistance + scaledIncrease;
-                float allowedHeight = Math.Min(10f, Vector3.Distance(selectedPlayer1.position, selectedPlayer2.position) / CameraSettings.allowedHeightScaler);
+                float allowedHeight = Math.Min(10f, Vector3.Distance(selectedPlayer1.position, selectedPlayer2.position) / Preferences.PrefAllowedHeightScaler.Value);
 
                 //moves camera forwards/backwards as needed smoothly
-                if (Mathf.Abs(distanceToPlayersCenter - idealCameraDistance) > CameraSettings.cameraPositionBuffer)
+                if (Mathf.Abs(distanceToPlayersCenter - idealCameraDistance) > Preferences.PrefCamPosBuffer.Value)
                 {
                     Vector3 dirFromCenter = (cameraRotationControl.position - smoothedPlayersCenter).normalized;
-                    cameraRotationControl.position = Vector3.Lerp(cameraRotationControl.position, smoothedPlayersCenter + dirFromCenter * idealCameraDistance, Time.fixedDeltaTime * CameraSettings.cameraMoveSpeed);
+                    cameraRotationControl.position = Vector3.Lerp(cameraRotationControl.position, smoothedPlayersCenter + dirFromCenter * idealCameraDistance, Time.fixedDeltaTime * Preferences.PrefCameraMoveSpeed.Value);
                 }
 
                 //move up/down as needed smoothly
                 float clampedY = Mathf.Clamp(cameraRotationControl.position.y, smoothedPlayersCenter.y, smoothedPlayersCenter.y + allowedHeight);
                 Vector3 clampedYVector = new(cameraRotationControl.position.x, clampedY, cameraRotationControl.position.z);
-                cameraRotationControl.position = Vector3.Lerp(cameraRotationControl.position, clampedYVector, Time.fixedDeltaTime * CameraSettings.cameraMoveSpeed);
+                cameraRotationControl.position = Vector3.Lerp(cameraRotationControl.position, clampedYVector, Time.fixedDeltaTime * Preferences.PrefCameraMoveSpeed.Value);
 
                 if (Core.isMatchmaking)
                 {
                     distanceToCenter = Vector2.Distance(Vector2.zero, new Vector2(cameraRotationControl.position.x, cameraRotationControl.position.z));
                     //move forwards when too far from center in Matchmaking smoothly
-                    while ((Vector2.Distance(Vector2.zero, new Vector2(smoothedPlayersCenter.x, smoothedPlayersCenter.z)) < CameraSettings.cameraDistanceFromMapCenterAllowed) && (distanceToCenter > CameraSettings.cameraDistanceFromMapCenterAllowed))
+                    while ((Vector2.Distance(Vector2.zero, new Vector2(smoothedPlayersCenter.x, smoothedPlayersCenter.z)) < Preferences.PrefMaxCenterDist.Value) && (distanceToCenter > Preferences.PrefMaxCenterDist.Value))
                     {
-                        cameraRotationControl.position += cameraRotationControl.forward * CameraSettings.cameraPositionCorrectionScaler;
+                        cameraRotationControl.position += cameraRotationControl.forward * Preferences.PrefCamPosCorrection.Value;
                         cameraRotationControl.LookAt(smoothedPlayersCenter);
                         distanceToCenter = Vector2.Distance(Vector2.zero, new Vector2(cameraRotationControl.position.x, cameraRotationControl.position.z));
                     }
                 }
 
                 //camera orbit
-                if (Vector3.Distance(camera.position, cameraRotationControl.position) < CameraSettings.cameraPositionBuffer / CameraSettings.cameraDistanceFromMapCenterAllowed)
+                if (Vector3.Distance(camera.position, cameraRotationControl.position) < Preferences.PrefCamPosBuffer.Value / Preferences.PrefMaxCenterDist.Value)
                 {
-                    Vector3 movementAmount = (isOrbitingRight ? 1 : -1) * cameraRotationControl.right * CameraSettings.cameraPositionCorrectionScaler;
+                    Vector3 movementAmount = (isOrbitingRight ? 1 : -1) * cameraRotationControl.right * Preferences.PrefCamPosCorrection.Value;
                     Vector3 desiredOrbitPos = cameraRotationControl.position - movementAmount;
-                    if (!Core.isMatchmaking || (Vector2.Distance(Vector2.zero, new Vector2(desiredOrbitPos.x, desiredOrbitPos.z)) <= CameraSettings.cameraDistanceFromMapCenterAllowed))
+                    if (!Core.isMatchmaking || (Vector2.Distance(Vector2.zero, new Vector2(desiredOrbitPos.x, desiredOrbitPos.z)) <= Preferences.PrefMaxCenterDist.Value))
                     {
-                        cameraRotationControl.RotateAround(smoothedPlayersCenter, Vector3.up, (isOrbitingRight ? 1f : -1f) * CameraSettings.cameraOrbitSpeed * Time.fixedDeltaTime);
+                        cameraRotationControl.RotateAround(smoothedPlayersCenter, Vector3.up, (isOrbitingRight ? 1f : -1f) * Preferences.PrefCameraOrbitSpeed.Value * Time.fixedDeltaTime);
                     }
                     else { isOrbitingRight = !isOrbitingRight; } //or change what way it orbits
                 }
@@ -369,9 +299,9 @@ namespace HeinhouserHoloLens
             }
 
             //return camera to 1st person mode since spectating is done
-            if (Core.revertTo1stPerson) { PlayerManager.instance.localPlayer.Controller.PlayerLIV.LckTablet.lckCameraController.CameraModeChanged(CameraMode.FirstPerson); }
+            if (Preferences.PrefRevertToFps.Value) { PlayerManager.instance.localPlayer.Controller.PlayerLIV.LckTablet.lckCameraController.CameraModeChanged(CameraMode.FirstPerson); }
 
-            yield break;
-        }
-    }
+			yield break;
+		}
+	}
 }

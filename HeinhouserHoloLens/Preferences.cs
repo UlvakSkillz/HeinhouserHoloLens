@@ -115,21 +115,5 @@ namespace HeinhouserHoloLens
 			}
 			return false;
 		}
-
-
-		private static void Save(string categoryPath)
-		{
-		//	if (!categoryPath.Contains("HeinhouserHoloLens"))
-		//		return;
-		//	bool pastHoloLensEnabled = modEnabled;
-		//	bool pastShowCameraInGame = showHoloLensInGame;
-		//	bool pastParkSpectateActive = parkSpectateActive;
-		//	modEnabled = (bool)settings[0].SavedValue;
-		//	showHoloLensInGame = (bool)settings[1].SavedValue;
-		//	parkSpectateActive = (bool)settings[2].SavedValue;
-		//	revertTo1stPerson = (bool)settings[3].SavedValue;
-		//	CameraControl.Save(modEnabled != pastHoloLensEnabled, showHoloLensInGame != pastShowCameraInGame, parkSpectateActive != pastParkSpectateActive);
-		}
-
 	}
 }
