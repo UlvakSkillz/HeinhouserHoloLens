@@ -61,6 +61,10 @@ namespace HeinhouserHoloLens
         private static GameObject activeHoloLens = null;
         private static Transform camera = null;
         private static bool IsRecording = false;
+        private static bool grabbedMaterial = false;
+        private static bool IsActiveHoloLensNormal = true;
+        private static int headShotPercent = 100;
+
 
         [HarmonyPatch(typeof(LCKTabletUtility), nameof(LCKTabletUtility.OnRecordingStarted), new Type[] { typeof(LckResult) })]
         public static class LCKTabletUtilityOnRecordingStartedPatch
@@ -98,8 +102,13 @@ namespace HeinhouserHoloLens
         internal static void MapLoaded(string map)
         {
             //on map load, start spectating or return to 1st person if needed
+            if (!grabbedMaterial && Core.currentScene == "Gym")
+            {
+                ddolHoloLens.transform.GetChild(0).GetChild(3).GetComponent<MeshRenderer>().material = GameObjects.Gym.TUTORIAL.Worldtutorials.CombatCarvings.CombatCarvingPosture.CarvingHeadParent.PostureCarvingHead.TposePlayer.GetGameObject().GetComponent<MeshRenderer>().material;
+                grabbedMaterial = true;
+            }
             if (Core.modEnabled && Core.isMatchmaking) { StartSpectate(); }
-            else if (Core.modEnabled && Core.revertTo1stPerson && (Core.currentScene == "Gym")) { PlayerManager.instance.localPlayer.Controller.PlayerLIV.LckTablet.lckCameraController.CameraModeChanged(CameraMode.Selfie); }
+            else if (Core.modEnabled && Core.revertTo1stPerson && (Core.currentScene == "Gym")) { PlayerManager.instance.localPlayer.Controller.PlayerLIV.LckTablet.lckCameraController.CameraModeChanged(CameraMode.FirstPerson); }
         }
 
         internal static void Save(bool holoLensEnabledChanged, bool showCameraInGameChanged, bool parkSpectateActiveChanged)
@@ -130,6 +139,9 @@ namespace HeinhouserHoloLens
                 (float)Core.settings[12].SavedValue,
                 (float)Core.settings[13].SavedValue,
                 (float)Core.settings[14].SavedValue);
+            Core.settings[15].SavedValue = Math.Clamp((int)Core.settings[15].SavedValue, 0, 100);
+            Core.settings[15].Value = (int)Core.settings[15].SavedValue;
+            headShotPercent = (int)Core.settings[15].SavedValue;
 
             //check if the players to watch changed since last save
             bool playersChanged =
@@ -191,7 +203,7 @@ namespace HeinhouserHoloLens
         private static void UpdateRecordingLens()
         {
             //runs after the player starts/stops recording
-            if (activeHoloLens != null)
+            if (IsActiveHoloLensNormal && (activeHoloLens != null))
             {
                 activeHoloLens.transform.GetChild(0).GetChild(0).gameObject.SetActive(!IsRecording); //recording off (green)
                 activeHoloLens.transform.GetChild(0).GetChild(1).gameObject.SetActive(IsRecording); //recording on (red)
@@ -202,13 +214,23 @@ namespace HeinhouserHoloLens
         {
             if (activeHoloLens == null)
             {
+                //create stored HoloLens
                 activeHoloLens = GameObject.Instantiate(ddolHoloLens);
                 activeHoloLens.name = "HoloLens";
                 activeHoloLens.SetActive(true);
-                activeHoloLens.transform.SetParent(camera);
+                activeHoloLens.transform.SetParent(camera.GetChild(0));
                 activeHoloLens.transform.localPosition = Vector3.zero;
                 activeHoloLens.transform.localRotation = Quaternion.identity;
-                UpdateRecordingLens();
+                //if chance for HeadShot succeeds, change to head shown
+                if ((headShotPercent != 0) && (Core.random.Next(1, 101) <= headShotPercent))
+                {
+                    IsActiveHoloLensNormal = false;
+                    activeHoloLens.transform.GetChild(0).GetChild(0).gameObject.SetActive(false); //green lens
+                    activeHoloLens.transform.GetChild(0).GetChild(1).gameObject.SetActive(false); //red lens
+                    activeHoloLens.transform.GetChild(0).GetChild(2).gameObject.SetActive(false); //ring
+                    activeHoloLens.transform.GetChild(0).GetChild(3).gameObject.SetActive(true); //head
+                }
+                else { UpdateRecordingLens(); } //otherwise update lens as normal
             }
         }
 
@@ -332,6 +354,7 @@ namespace HeinhouserHoloLens
             } //ending of while loop that controls the camera
 
             //cleanup extra GameObjects if they are still around
+            IsActiveHoloLensNormal = true;
             if (activeHoloLens != null) { GameObject.Destroy(activeHoloLens); }
             if (cameraRotationControl != null) { GameObject.Destroy(cameraRotationControl.gameObject); }
             //restore camera if it's still around
@@ -343,7 +366,7 @@ namespace HeinhouserHoloLens
             }
 
             //return camera to 1st person mode since spectating is done
-            if (Core.revertTo1stPerson) { PlayerManager.instance.localPlayer.Controller.PlayerLIV.LckTablet.lckCameraController.CameraModeChanged(CameraMode.Selfie); }
+            if (Core.revertTo1stPerson) { PlayerManager.instance.localPlayer.Controller.PlayerLIV.LckTablet.lckCameraController.CameraModeChanged(CameraMode.FirstPerson); }
 
             yield break;
         }
