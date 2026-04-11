@@ -2,7 +2,7 @@
 using RumbleModdingAPI.RMAPI;
 using RumbleModUI;
 using UIFramework;
-using RumbleModUI;
+//using RumbleModUI;
 namespace HeinhouserHoloLens
 {
 	public static class BuildInfo
@@ -18,27 +18,31 @@ namespace HeinhouserHoloLens
 		internal static MelonMod instance;
 		internal static string currentScene = "Loader";
 		private readonly Mod HeinhouserHoloLens = new();
-		internal static readonly List<ModSetting> settings = new();
-		internal static bool modEnabled = true;
+
+
+		//internal static readonly List<ModSetting> settings = new();
+/*		internal static bool modEnabled = true;
 		internal static bool showHoloLensInGame = true;
 		internal static bool parkSpectateActive = false;
-		internal static bool revertTo1stPerson = true;
+		internal static bool revertTo1stPerson = true;*/
 		internal static bool isMatchmaking = false;
 
 		public override void OnInitializeMelon()
 		{
 			Preferences.InitPrefs();
 			UIFramework.UI.Register(this,Preferences.HoloLensCategory, Preferences.ParkSpectateCategory, Preferences.CameraMovementCategory, Preferences.CameraPositionCategory);
+			MelonPreferences.OnPreferencesSaved.Subscribe(Save);
 		}
 		public override void OnSceneWasLoaded(int buildIndex, string sceneName)
 		{
 			currentScene = sceneName;
 			isMatchmaking = currentScene.Contains("Map");
-			if (settings.Count > 3)
+			/*if (settings.Count > 3)
 			{
 				settings[3].Value = false;
 				settings[3].SavedValue = false;
-			}
+			}*/
+			Preferences.PrefParkSpectate.Value = false;
 			CameraControl.OnSceneWasLoaded();
 		}
 
@@ -52,7 +56,7 @@ namespace HeinhouserHoloLens
 
 		private void UIInit()
 		{
-			HeinhouserHoloLens.ModName = BuildInfo.ModName;
+			/*HeinhouserHoloLens.ModName = BuildInfo.ModName;
 			HeinhouserHoloLens.ModVersion = BuildInfo.ModVersion;
 			HeinhouserHoloLens.SetFolder(BuildInfo.ModName);
 			settings.Add(HeinhouserHoloLens.AddToList("Enable HoloLens", true, 0, "Toggles HoloLens Camera On/Off when entering Matchmaking", new Tags { }));
@@ -75,20 +79,26 @@ namespace HeinhouserHoloLens
 			settings.Add(HeinhouserHoloLens.AddToList("Allowed Height Scaler", 1.5f, $"Scaled the allowed Height of the Camera in comparison to the Player's Center Point Height (smaller = higher, bigger = lower){Environment.NewLine}Default: 0.1", new Tags { }));
 			HeinhouserHoloLens.GetFromFile();
 			HeinhouserHoloLens.ModSaved += Save;
-			RumbleModUI.UI.instance.AddMod(HeinhouserHoloLens);
-			Save();
+			RumbleModUI.UI.instance.AddMod(HeinhouserHoloLens);*/
+			//Save();
 		}
 
-		private void Save()
+		private void Save(string savePath)
 		{
-			bool pastHoloLensEnabled = modEnabled;
+			if (!savePath.Contains("HeinhouserHoloLens"))
+				return;//Return if the saved config isn't for this mod
+
+			CameraControl.Save(Preferences.IsPrefChanged(Preferences.PrefEnable), Preferences.IsPrefChanged(Preferences.PrefShowInGame), Preferences.IsPrefChanged(Preferences.PrefParkSpectate));
+
+			Preferences.StoreLastSavedPrefs();
+			/*bool pastHoloLensEnabled = modEnabled;
 			bool pastShowCameraInGame = showHoloLensInGame;
 			bool pastParkSpectateActive = parkSpectateActive;
 			modEnabled = (bool)settings[0].SavedValue;
 			showHoloLensInGame = (bool)settings[1].SavedValue;
 			parkSpectateActive = (bool)settings[2].SavedValue;
-			revertTo1stPerson = (bool)settings[3].SavedValue;
-			CameraControl.Save(modEnabled != pastHoloLensEnabled, showHoloLensInGame != pastShowCameraInGame, parkSpectateActive != pastParkSpectateActive);
+			revertTo1stPerson = (bool)settings[3].SavedValue;*/
+
 		}
 	}
 }

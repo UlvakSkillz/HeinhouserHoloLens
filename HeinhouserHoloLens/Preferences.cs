@@ -72,18 +72,18 @@ namespace HeinhouserHoloLens
 			PrefCamPosBuffer = CameraPositionCategory.CreateEntry("CamPosBuffer", 0.1f, "Camera Position Buffer", $"Determines if the Camera needs to move (small but not 0 is best){Environment.NewLine}Default: 0.1");
 			PrefAllowedHeightScaler = CameraPositionCategory.CreateEntry("AllowedHeightScaler", 1f, "Allowed Height Scaler", $"Controls the maximum allowed height for the Camera{Environment.NewLine}Default: 1");
 
-			MelonPreferences.OnPreferencesSaved.Subscribe(Save);
+			//MelonPreferences.OnPreferencesSaved.Subscribe(Save);
 
-
+			PrefParkSpectate.ResetToDefault(); //Ignore saved setting to emulate ModUI DoNotSave tag;
 			StoreLastSavedPrefs();
 		}
 
 
-		internal static List<object> PrevSavedPrefs = new();
 
+		internal static Dictionary<MelonPreferences_Entry, object> LastSavedValues = new();
 		internal static void StoreLastSavedPrefs()
 		{
-			var prefs = new List<MelonPreferences_Entry> = new();
+			List<MelonPreferences_Entry> prefs = new();
 			prefs.AddRange(HoloLensCategory.Entries);
 			prefs.AddRange(ParkSpectateCategory.Entries);
 			prefs.AddRange(CameraMovementCategory.Entries);
@@ -91,9 +91,29 @@ namespace HeinhouserHoloLens
 
 			foreach (MelonPreferences_Entry entry in  prefs)
 			{
-				PrevSavedPrefs.Add(entry.BoxedValue);
+				LastSavedValues[entry] = entry.BoxedValue;
 			}
 		}
+
+		public static bool AnyPrefsChanged()
+		{
+			foreach (KeyValuePair<MelonPreferences_Entry, object> pair in LastSavedValues)
+			{
+				if (!pair.Key.BoxedValue.Equals(pair.Value))
+					return true;
+			}
+			return false;
+		}
+
+		public static bool IsPrefChanged(MelonPreferences_Entry entry)
+		{
+			if (LastSavedValues.TryGetValue(entry, out object? lastValue))
+			{
+				return !entry.BoxedValue.Equals(lastValue);
+			}
+			return false;
+		}
+
 
 		private static void Save(string categoryPath)
 		{
