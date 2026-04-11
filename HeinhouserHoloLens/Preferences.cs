@@ -13,6 +13,7 @@ namespace HeinhouserHoloLens
 		internal static MelonPreferences_Entry<bool> PrefEnable;
 		internal static MelonPreferences_Entry<bool> PrefShowInGame;
 		internal static MelonPreferences_Entry<bool> PrefRevertToFps;
+		internal static MelonPreferences_Entry<int> PrefHeadChance;
 
 		internal static MelonPreferences_Category ParkSpectateCategory;
 		internal static MelonPreferences_Entry<bool> PrefParkSpectate;
@@ -44,6 +45,7 @@ namespace HeinhouserHoloLens
 			PrefEnable = HoloLensCategory.CreateEntry("EnableHoloLens", true, "Enable Holo Lens", "Toggles HoloLens Camera On/Off when entering Matchmaking");
 			PrefShowInGame = HoloLensCategory.CreateEntry("ShowInGame", true, "Show In Game", "Toggles Camera Visual On/Off");
 			PrefRevertToFps = HoloLensCategory.CreateEntry("RevertToFps", true, "Revert To 1st Person", "Reverts to 1st Person View whenever entering the Gym or Spectating Stops");
+			PrefHeadChance = HoloLensCategory.CreateEntry("Head Camera Chance", 1, "Head Camera Chance Percent", $"Changes the % chance to replace the HoloLens with a Player Head");
 
 			//Park settings
 			ParkSpectateCategory = MelonPreferences.CreateCategory("Park", "Park Settings");
