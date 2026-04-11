@@ -1,12 +1,13 @@
 ﻿using MelonLoader;
 using RumbleModdingAPI.RMAPI;
 using UIFramework;
+
 namespace HeinhouserHoloLens
 {
     public static class BuildInfo
     {
         public const string ModName = "HeinhouserHoloLens";
-        public const string ModVersion = "1.0.1";
+        public const string ModVersion = "1.1.0";
         public const string Author = "UlvakSkillz";
     }
 

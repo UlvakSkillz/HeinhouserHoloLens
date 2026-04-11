@@ -5,7 +5,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>disable</Nullable>
 
-		<RumblePath>G:\SteamLibrary\steamapps\common\RUMBLE</RumblePath>
+		<RumblePath>F:\SteamLibrary\steamapps\common\RUMBLE</RumblePath>
 	</PropertyGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
