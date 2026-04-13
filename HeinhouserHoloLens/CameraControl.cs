@@ -14,7 +14,7 @@ namespace HeinhouserHoloLens
 	{
 		internal static string SettingsToString()
 		{
-			return $"{(Core.isMatchmaking ? $"player1 = 0, player2 = 1, " : (Core.currentScene == "Park" ? $"parkPlayer1 = {Preferences.PrefParkPlayer1}, parkPlayer2 = {Preferences.PrefParkPlayer2}, " : ""))}"
+			return $"{(Core.isMatchmaking ? $"player1 = 0, player2 = 1, " : (Core.currentScene is "Park" ? $"parkPlayer1 = {Preferences.PrefCamPlayer1}, parkPlayer2 = {Preferences.PrefCamPlayer2}, " : ""))}"
 				+ $"cameraMoveSpeed = {Preferences.PrefCameraMoveSpeed}"
 				+ $", cameraOrbitSpeed = {Preferences.PrefCameraOrbitSpeed}"
 				+ $", cameraPositionCorrectionScaler = {Preferences.PrefCamPosCorrection}"
@@ -26,7 +26,6 @@ namespace HeinhouserHoloLens
 				+ $", allowedHeightScaler = {Preferences.PrefAllowedHeightScaler}";
 		}
 	}
-
 
     internal class CameraControl
     {
@@ -75,19 +74,18 @@ namespace HeinhouserHoloLens
         internal static void MapLoaded(string map)
         {
             //on map load, start spectating or return to 1st person if needed
-            if (!grabbedMaterial && Core.currentScene == "Gym")
+            if (!grabbedMaterial && (Core.currentScene is "Gym"))
             {
                 ddolHoloLens.transform.GetChild(0).GetChild(3).GetComponent<MeshRenderer>().material = GameObjects.Gym.TUTORIAL.Worldtutorials.CombatCarvings.CombatCarvingPosture.CarvingHeadParent.PostureCarvingHead.TposePlayer.GetGameObject().GetComponent<MeshRenderer>().material;
                 grabbedMaterial = true;
             }
             if (Preferences.PrefEnable.Value && Core.isMatchmaking) { StartSpectate(); }
-            else if (Preferences.PrefEnable.Value && Preferences.PrefRevertToFps.Value && (Core.currentScene == "Gym")) { PlayerManager.instance.localPlayer.Controller.PlayerLIV.LckTablet.lckCameraController.CameraModeChanged(CameraMode.FirstPerson); }
+            else if (Preferences.PrefEnable.Value && Preferences.PrefRevertToFps.Value && (Core.currentScene is "Gym")) { PlayerManager.instance.localPlayer.Controller.PlayerLIV.LckTablet.lckCameraController.CameraModeChanged(CameraMode.FirstPerson); }
         }
 
-        internal static void Save(bool holoLensEnabledChanged, bool showCameraInGameChanged, bool parkSpectateActiveChanged)
+        internal static void Save(bool holoLensEnabledChanged, bool showCameraInGameChanged, bool spectateActiveChanged)
         {
-            Melon<Core>.Logger.Msg($"Saving");
-            bool playersChanged = Preferences.IsPrefChanged(Preferences.PrefParkPlayer1) || Preferences.IsPrefChanged(Preferences.PrefParkPlayer2);
+            bool playersChanged = Preferences.IsPrefChanged(Preferences.PrefCamPlayer1) || Preferences.IsPrefChanged(Preferences.PrefCamPlayer2);
 
 			//check if any of the camera settings changed since last save
 			bool settingsChanged =
@@ -103,24 +101,19 @@ namespace HeinhouserHoloLens
 
             if (settingsChanged)
 			{//if camera settings changed, restart spectator camera to apply new settings if currently spectating
-                Melon<Core>.Logger.Msg($"Camera settings changed");
                 if (Preferences.PrefEnable.Value && Core.isMatchmaking && cameraIsBeingControlled) { StartSpectate(); }
-				else if (Preferences.PrefEnable.Value && cameraIsBeingControlled && (Core.currentScene == "Park")) { StartSpectate(Preferences.PrefParkPlayer1.Value, Preferences.PrefParkPlayer2.Value); }
+				else if (Preferences.PrefEnable.Value && cameraIsBeingControlled && Core.currentScene.Contains("Park")) { StartSpectate(Preferences.PrefCamPlayer1.Value, Preferences.PrefCamPlayer2.Value); }
 			}
 			else
             {//if settings are the same
-                Melon<Core>.Logger.Msg($"Settings are the same");
                 if (Core.isMatchmaking) //and we are in matchmaking
                 {
-                    Melon<Core>.Logger.Msg($"Is Matchmaking");
                     //if the show camera in game setting changed, create/destroy the holo lens as needed
                     if (Preferences.PrefEnable.Value && showCameraInGameChanged)
                     {
-                        Melon<Core>.Logger.Msg($"Enabled and showCameraInGameChanged");
-                        if (Preferences.PrefShowInGame.Value && (activeHoloLens == null)) { CreateHoloLens(); }
-						else if (!Preferences.PrefShowInGame.Value && (activeHoloLens != null))
+                        if (Preferences.PrefShowInGame.Value && (activeHoloLens is null)) { CreateHoloLens(); }
+						else if (!Preferences.PrefShowInGame.Value && (activeHoloLens is not null))
                         {
-                            Melon<Core>.Logger.Msg($"Destroying HoloLens");
                             GameObject.Destroy(activeHoloLens);
 							activeHoloLens = null;
 						}
@@ -128,19 +121,18 @@ namespace HeinhouserHoloLens
 					//if the holo lens enabled setting changed, start/stop spectating as needed
 					if (holoLensEnabledChanged)
                     {
-                        Melon<Core>.Logger.Msg($"holoLensEnabledChanged");
                         if (Preferences.PrefEnable.Value) { StartSpectate(); }
 						else { cameraIsBeingControlled = false; }
 					}
 				}
-				else if (Core.currentScene == "Park") //and we are in the park
+				else
 				{
 					//if the players to watch changed, start spectating with new players
-					if (playersChanged && Preferences.PrefParkSpectate.Value && Preferences.PrefEnable.Value) { StartSpectate(Preferences.PrefParkPlayer1.Value, Preferences.PrefParkPlayer2.Value); }
-					//if the park spectate active setting changed, start/stop spectating as needed
-					if (parkSpectateActiveChanged)
+					if (playersChanged && Preferences.PrefCamSpectate.Value && Preferences.PrefEnable.Value) { StartSpectate(Preferences.PrefCamPlayer1.Value, Preferences.PrefCamPlayer2.Value); }
+					//if the spectate active setting changed, start/stop spectating as needed
+					if (spectateActiveChanged)
 					{
-						if (Preferences.PrefParkSpectate.Value) { StartSpectate(Preferences.PrefParkPlayer1.Value, Preferences.PrefParkPlayer2.Value); }
+						if (Preferences.PrefCamSpectate.Value) { StartSpectate(Preferences.PrefCamPlayer1.Value, Preferences.PrefCamPlayer2.Value); }
 						else { cameraIsBeingControlled = false; }
 					}
 				}
@@ -150,7 +142,7 @@ namespace HeinhouserHoloLens
         private static void UpdateRecordingLens()
         {
             //runs after the player starts/stops recording
-            if (IsActiveHoloLensNormal && (activeHoloLens != null))
+            if (IsActiveHoloLensNormal && (activeHoloLens is not null))
             {
                 activeHoloLens.transform.GetChild(0).GetChild(0).gameObject.SetActive(!IsRecording); //recording off (green)
                 activeHoloLens.transform.GetChild(0).GetChild(1).gameObject.SetActive(IsRecording); //recording on (red)
@@ -159,8 +151,7 @@ namespace HeinhouserHoloLens
 
         private static void CreateHoloLens()
         {
-            Melon<Core>.Logger.Msg($"Creating HoloLens");
-            if (activeHoloLens == null)
+            if (activeHoloLens is null)
             {
                 //create stored HoloLens
                 activeHoloLens = GameObject.Instantiate(ddolHoloLens);
@@ -170,7 +161,7 @@ namespace HeinhouserHoloLens
                 activeHoloLens.transform.localPosition = Vector3.zero;
                 activeHoloLens.transform.localRotation = Quaternion.identity;
                 //if chance for HeadShot succeeds, change to head shown
-                if ((Preferences.PrefHeadChance.Value != 0) && (Core.random.Next(1, 101) <= Preferences.PrefHeadChance.Value))
+                if ((Preferences.PrefHeadChance.Value is not 0) && (Core.random.Next(1, 101) <= Preferences.PrefHeadChance.Value))
                 {
                     IsActiveHoloLensNormal = false;
                     activeHoloLens.transform.GetChild(0).GetChild(0).gameObject.SetActive(false); //green lens
@@ -198,7 +189,7 @@ namespace HeinhouserHoloLens
             lckCameraController.CameraModeChanged(CameraMode.Selfie);
             lckCameraController.SelfieFOVDoubleButton.ApplySavedData(90);
             lckCameraController.SelfieSmoothingDoubleButton.ApplySavedData(0);
-            if (lckCameraController.CurrentCameraOrientation == LckCameraOrientation.Portrait) { lckCameraController._orientationButton.RPC_OnPressed(); }
+            if (lckCameraController.CurrentCameraOrientation is LckCameraOrientation.Portrait) { lckCameraController._orientationButton.RPC_OnPressed(); }
             yield return new WaitForSeconds(0.25f);
 
             PlayerManager.instance.localPlayer.Controller.PlayerLIV.HideTablet();
@@ -241,7 +232,7 @@ namespace HeinhouserHoloLens
             cameraRotationControl.rotation = camera.rotation;
 
             //starting of the loop that controls the camera until spectating is turned off or we change scenes
-            while (cameraIsBeingControlled && (selectedPlayer1 != null) && (selectedPlayer2 != null) && (camera != null) && (cameraRotationControl != null))
+            while (cameraIsBeingControlled && (selectedPlayer1 is not null) && (selectedPlayer2 is not null) && (camera is not null) && (cameraRotationControl is not null))
             {
                 //persistent variable updates
                 localDistance = Vector3.Distance(camera.position, selectedPlayer1.position);
@@ -304,10 +295,10 @@ namespace HeinhouserHoloLens
 
             //cleanup extra GameObjects if they are still around
             IsActiveHoloLensNormal = true;
-            if (activeHoloLens != null) { GameObject.Destroy(activeHoloLens); }
-            if (cameraRotationControl != null) { GameObject.Destroy(cameraRotationControl.gameObject); }
+            if (activeHoloLens is not null) { GameObject.Destroy(activeHoloLens); }
+            if (cameraRotationControl is not null) { GameObject.Destroy(cameraRotationControl.gameObject); }
             //restore camera if it's still around
-            if (camera != null)
+            if (camera is not null)
             {
                 camera.SetParent(originalParent);
                 camera.localPosition = originalLocalPos;

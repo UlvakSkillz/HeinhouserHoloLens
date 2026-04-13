@@ -6,17 +6,18 @@ namespace HeinhouserHoloLens
 	{
 		private const string CONFIG_FILE = "config.cfg";
 		private const string USER_DATA = "UserData/HeinhouserHoloLens/";
+        internal static Dictionary<MelonPreferences_Entry, object> LastSavedValues = new();
 
-		internal static MelonPreferences_Category HoloLensCategory;
+        internal static MelonPreferences_Category HoloLensCategory;
 		internal static MelonPreferences_Entry<bool> PrefEnable;
 		internal static MelonPreferences_Entry<bool> PrefShowInGame;
 		internal static MelonPreferences_Entry<bool> PrefRevertToFps;
 		internal static MelonPreferences_Entry<int> PrefHeadChance;
 
-		internal static MelonPreferences_Category ParkSpectateCategory;
-		internal static MelonPreferences_Entry<bool> PrefParkSpectate;
-		internal static MelonPreferences_Entry<int> PrefParkPlayer1;
-		internal static MelonPreferences_Entry<int> PrefParkPlayer2;
+		internal static MelonPreferences_Category CameraSpectateCategory;
+		internal static MelonPreferences_Entry<bool> PrefCamSpectate;
+		internal static MelonPreferences_Entry<int> PrefCamPlayer1;
+		internal static MelonPreferences_Entry<int> PrefCamPlayer2;
 
 		internal static MelonPreferences_Category CameraMovementCategory;
 		internal static MelonPreferences_Entry<float> PrefCameraMoveSpeed;
@@ -33,8 +34,7 @@ namespace HeinhouserHoloLens
 
 		internal static void InitPrefs()
 		{
-			if (!Directory.Exists(USER_DATA))
-				Directory.CreateDirectory(USER_DATA);
+			if (!Directory.Exists(USER_DATA)) { Directory.CreateDirectory(USER_DATA); }
 
 			//General settings
 			HoloLensCategory = MelonPreferences.CreateCategory("HoloLens", "Settings");
@@ -46,12 +46,12 @@ namespace HeinhouserHoloLens
             PrefHeadChance = HoloLensCategory.CreateEntry("Head Camera Chance", 1, "Head Camera Chance Percent", $"Changes the % chance to replace the HoloLens with a Player Head");
 
             //Park settings
-            ParkSpectateCategory = MelonPreferences.CreateCategory("Park", "Park Settings");
-            ParkSpectateCategory.SetFilePath(Path.Combine(USER_DATA, CONFIG_FILE));
+            CameraSpectateCategory = MelonPreferences.CreateCategory("Camera", "Camera Settings");
+            CameraSpectateCategory.SetFilePath(Path.Combine(USER_DATA, CONFIG_FILE));
 
-            PrefParkSpectate = ParkSpectateCategory.CreateEntry("ParkSpectate", false, "Park Spectate Activate", "Toggles On/Off Park Spectate");
-            PrefParkPlayer1 = ParkSpectateCategory.CreateEntry("ParkPlayer1", 0, "Park Player 1", $"Selects what Player to Spectate as Player 1 (0 = You, 1 = Oldest Remote Player, 2 = 2nd Oldest Remote Player, etc){Environment.NewLine}Defaults to Local Player if invalid");
-            PrefParkPlayer2 = ParkSpectateCategory.CreateEntry("ParkPlayer2", 1, "Park Player 2", $"Selects what Player to Spectate as Player 2 (0 = You, 1 = Oldest Remote Player, 2 = 2nd Oldest Remote Player, etc){Environment.NewLine}Defaults to Local Player if invalid");
+            PrefCamSpectate = CameraSpectateCategory.CreateEntry("CamSpectate", false, "Camera Spectate Activate", "Toggles On/Off Spectating in non-Matchmaking Maps");
+            PrefCamPlayer1 = CameraSpectateCategory.CreateEntry("CamPlayer1", 0, "Camera Player 1", $"Selects what Player to Spectate as Player 1 (0 = You, 1 = Oldest Remote Player, 2 = 2nd Oldest Remote Player, etc){Environment.NewLine}Defaults to Local Player if invalid");
+            PrefCamPlayer2 = CameraSpectateCategory.CreateEntry("CamPlayer2", 1, "Camera Player 2", $"Selects what Player to Spectate as Player 2 (0 = You, 1 = Oldest Remote Player, 2 = 2nd Oldest Remote Player, etc){Environment.NewLine}Defaults to Local Player if invalid");
 
             //Camera Movement Settings
             CameraMovementCategory = MelonPreferences.CreateCategory("Camera Movement", "Camera Movement");
@@ -72,45 +72,34 @@ namespace HeinhouserHoloLens
             PrefCamPosBuffer = CameraPositionCategory.CreateEntry("CamPosBuffer", 0.1f, "Camera Position Buffer", $"Determines if the Camera needs to move (small but not 0 is best){Environment.NewLine}Default: 0.1");
             PrefAllowedHeightScaler = CameraPositionCategory.CreateEntry("AllowedHeightScaler", 1.5f, "Allowed Height Scaler", $"Scaled the Allowed Height of the Camera in comparison to the Player's Center Point Height (smaller = higher, bigger = lower){Environment.NewLine}Default: 1.5");
 
-            //MelonPreferences.OnPreferencesSaved.Subscribe(Save);
 
-            PrefParkSpectate.ResetToDefault(); //Ignore saved setting to emulate ModUI DoNotSave tag;
-			StoreLastSavedPrefs();
+            PrefCamSpectate.ResetToDefault(); //Ignore saved setting to emulate ModUI DoNotSave tag;
+            StoreLastSavedPrefs();
 		}
 
-
-
-		internal static Dictionary<MelonPreferences_Entry, object> LastSavedValues = new();
 		internal static void StoreLastSavedPrefs()
 		{
 			List<MelonPreferences_Entry> prefs = new();
 			prefs.AddRange(HoloLensCategory.Entries);
-			prefs.AddRange(ParkSpectateCategory.Entries);
+			prefs.AddRange(CameraSpectateCategory.Entries);
 			prefs.AddRange(CameraMovementCategory.Entries);
 			prefs.AddRange(CameraPositionCategory.Entries);
 
-			foreach (MelonPreferences_Entry entry in  prefs)
-			{
-				LastSavedValues[entry] = entry.BoxedValue;
-			}
+			foreach (MelonPreferences_Entry entry in  prefs) { LastSavedValues[entry] = entry.BoxedValue; }
 		}
 
 		public static bool AnyPrefsChanged()
 		{
 			foreach (KeyValuePair<MelonPreferences_Entry, object> pair in LastSavedValues)
 			{
-				if (!pair.Key.BoxedValue.Equals(pair.Value))
-					return true;
+				if (!pair.Key.BoxedValue.Equals(pair.Value)) { return true; }
 			}
 			return false;
 		}
 
 		public static bool IsPrefChanged(MelonPreferences_Entry entry)
 		{
-			if (LastSavedValues.TryGetValue(entry, out object? lastValue))
-			{
-				return !entry.BoxedValue.Equals(lastValue);
-			}
+			if (LastSavedValues.TryGetValue(entry, out object? lastValue)) { return !entry.BoxedValue.Equals(lastValue); }
 			return false;
 		}
 	}

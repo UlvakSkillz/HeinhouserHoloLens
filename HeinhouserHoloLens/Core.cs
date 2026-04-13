@@ -7,7 +7,7 @@ namespace HeinhouserHoloLens
     public static class BuildInfo
     {
         public const string ModName = "HeinhouserHoloLens";
-        public const string ModVersion = "1.1.0";
+        public const string ModVersion = "1.1.4";
         public const string Author = "UlvakSkillz";
     }
 
@@ -17,18 +17,19 @@ namespace HeinhouserHoloLens
 		internal static string currentScene = "Loader";
 		internal static bool isMatchmaking = false;
 		internal static Random random = new();
+
 		public override void OnInitializeMelon()
 		{
 			Preferences.InitPrefs();
-			UI.Register(this,Preferences.HoloLensCategory, Preferences.ParkSpectateCategory, Preferences.CameraMovementCategory, Preferences.CameraPositionCategory);
-			MelonPreferences.OnPreferencesSaved.Subscribe(Save);
+			UI.Register(this, Preferences.HoloLensCategory, Preferences.CameraSpectateCategory, Preferences.CameraMovementCategory, Preferences.CameraPositionCategory).OnModSaved += Save;
 		}
+
 		public override void OnSceneWasLoaded(int buildIndex, string sceneName)
 		{
 			currentScene = sceneName;
-			isMatchmaking = currentScene.Contains("Map");
-			Preferences.PrefParkSpectate.Value = false;
-			CameraControl.OnSceneWasLoaded();
+			isMatchmaking = currentScene is "Map0" or "Map1";
+			Preferences.PrefCamSpectate.Value = false;
+            CameraControl.OnSceneWasLoaded();
 		}
 
         public override void OnLateInitializeMelon()
@@ -37,16 +38,11 @@ namespace HeinhouserHoloLens
             CameraControl.OnLateInitializeMelon();
             Actions.onMapInitialized += CameraControl.MapLoaded;
         }
-		private void Save(string savePath)
+
+		private void Save()
 		{
-			if (!savePath.Contains("HeinhouserHoloLens"))
-				return;//Return if the saved config isn't for this mod
-
-			CameraControl.Save(Preferences.IsPrefChanged(Preferences.PrefEnable), Preferences.IsPrefChanged(Preferences.PrefShowInGame), Preferences.IsPrefChanged(Preferences.PrefParkSpectate));
-
+            CameraControl.Save(Preferences.IsPrefChanged(Preferences.PrefEnable), Preferences.IsPrefChanged(Preferences.PrefShowInGame), Preferences.IsPrefChanged(Preferences.PrefCamSpectate));
 			Preferences.StoreLastSavedPrefs();
-			LoggerInstance.Msg("Saved config");
-
 		}
 	}
 }
