@@ -7,7 +7,7 @@ namespace HeinhouserHoloLens
     public static class BuildInfo
     {
         public const string ModName = "HeinhouserHoloLens";
-        public const string ModVersion = "1.1.4";
+        public const string ModVersion = "1.1.5";
         public const string Author = "UlvakSkillz";
     }
 
