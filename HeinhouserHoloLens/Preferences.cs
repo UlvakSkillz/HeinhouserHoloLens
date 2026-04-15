@@ -1,4 +1,5 @@
 using MelonLoader;
+using MelonLoader.Preferences;
 
 namespace HeinhouserHoloLens
 {
@@ -43,35 +44,34 @@ namespace HeinhouserHoloLens
             PrefEnable = HoloLensCategory.CreateEntry("EnableHoloLens", true, "Enable Holo Lens", "Toggles HoloLens Camera On/Off");
             PrefShowInGame = HoloLensCategory.CreateEntry("ShowInGame", true, "Show HoloLens in Game", "Toggles Camera Visuals On/Off");
             PrefRevertToFps = HoloLensCategory.CreateEntry("RevertToFps", true, "Revert To 1st Person", "Reverts to 1st Person View whenever Entering the Gym or Spectating Stops");
-            PrefHeadChance = HoloLensCategory.CreateEntry("Head Camera Chance", 1, "Head Camera Chance Percent", $"Changes the % chance to replace the HoloLens with a Player Head");
+            PrefHeadChance = HoloLensCategory.CreateEntry("Head Camera Chance", 1, "Head Camera Chance Percent", $"Changes the % chance to replace the HoloLens with a Player Head", validator: new ValueRange<int>(0, int.MaxValue));
 
             //Park settings
             CameraSpectateCategory = MelonPreferences.CreateCategory("Camera", "Camera Settings");
             CameraSpectateCategory.SetFilePath(Path.Combine(USER_DATA, CONFIG_FILE));
 
             PrefCamSpectate = CameraSpectateCategory.CreateEntry("CamSpectate", false, "Camera Spectate Activate", "Toggles On/Off Spectating in non-Matchmaking Maps");
-            PrefCamPlayer1 = CameraSpectateCategory.CreateEntry("CamPlayer1", 0, "Camera Player 1", $"Selects what Player to Spectate as Player 1 (0 = You, 1 = Oldest Remote Player, 2 = 2nd Oldest Remote Player, etc){Environment.NewLine}Defaults to Local Player if invalid");
-            PrefCamPlayer2 = CameraSpectateCategory.CreateEntry("CamPlayer2", 1, "Camera Player 2", $"Selects what Player to Spectate as Player 2 (0 = You, 1 = Oldest Remote Player, 2 = 2nd Oldest Remote Player, etc){Environment.NewLine}Defaults to Local Player if invalid");
+            PrefCamPlayer1 = CameraSpectateCategory.CreateEntry("CamPlayer1", 0, "Camera Player 1", $"Selects what Player to Spectate as Player 1 (0 = You, 1 = Oldest Remote Player, 2 = 2nd Oldest Remote Player, etc){Environment.NewLine}Defaults to Local Player if invalid", validator: new ValueRange<int>(0, int.MaxValue));
+            PrefCamPlayer2 = CameraSpectateCategory.CreateEntry("CamPlayer2", 1, "Camera Player 2", $"Selects what Player to Spectate as Player 2 (0 = You, 1 = Oldest Remote Player, 2 = 2nd Oldest Remote Player, etc){Environment.NewLine}Defaults to Local Player if invalid", validator: new ValueRange<int>(0, int.MaxValue));
 
             //Camera Movement Settings
             CameraMovementCategory = MelonPreferences.CreateCategory("Camera Movement", "Camera Movement");
             CameraMovementCategory.SetFilePath(Path.Combine(USER_DATA, CONFIG_FILE));
 
-            PrefCameraMoveSpeed = CameraMovementCategory.CreateEntry("CameraMoveSpeed", 6.5f, "Move Speed", $"Controls how fast the Camera moves Forwards/Backwards and Up/Down{Environment.NewLine}Default: 6.5");
-            PrefCameraOrbitSpeed = CameraMovementCategory.CreateEntry("CameraOrbitSpeed", 6f, "Orbit Speed", $"Controls how fast the Camera Orbits around the Viewing Point{Environment.NewLine}Default: 6");
-            PrefCamPosCorrection = CameraMovementCategory.CreateEntry("CamPosCorrection", 0.01f, "Position Correction Scaler", $"Controls how fast the Camera moves when Orbiting and getting away from Walls{Environment.NewLine}Default: 0.01");
-            PrefMaxCenterDist = CameraMovementCategory.CreateEntry("MaxCenterDist", 10.25f, "Max Center Distance", $"Controls how far the Camera can move from the Center of the Matchmaking Map{Environment.NewLine}Default: 10.25");
+            PrefCameraMoveSpeed = CameraMovementCategory.CreateEntry("CameraMoveSpeed", 6.5f, "Move Speed", $"Controls how fast the Camera moves Forwards/Backwards and Up/Down{Environment.NewLine}Default: 6.5", validator: new ValueRange<float>(0, float.MaxValue));
+            PrefCameraOrbitSpeed = CameraMovementCategory.CreateEntry("CameraOrbitSpeed", 6f, "Orbit Speed", $"Controls how fast the Camera Orbits around the Viewing Point{Environment.NewLine}Default: 6", validator: new ValueRange<float>(0, float.MaxValue));
+            PrefCamPosCorrection = CameraMovementCategory.CreateEntry("CamPosCorrection", 0.01f, "Position Correction Scaler", $"Controls how fast the Camera moves when Orbiting and getting away from Walls{Environment.NewLine}Default: 0.01", validator: new ValueRange<float>(0, float.MaxValue));
+            PrefMaxCenterDist = CameraMovementCategory.CreateEntry("MaxCenterDist", 10.25f, "Max Center Distance", $"Controls how far the Camera can move from the Center of the Matchmaking Map{Environment.NewLine}Default: 10.25", validator: new ValueRange<float>(0, float.MaxValue));
 
             //Camera Position Settings
             CameraPositionCategory = MelonPreferences.CreateCategory("Camera Position", "Camera Position");
             CameraPositionCategory.SetFilePath(Path.Combine(USER_DATA, CONFIG_FILE));
 
-            PrefPlayerCenterSmoothing = CameraPositionCategory.CreateEntry("PlayerCenterSmoothing", 6f, "Player Center Smoothing", $"Controls how Smooth the Look at Center of the Players moves{Environment.NewLine}Default: 6");
-            PrefCamPosIncrease = CameraPositionCategory.CreateEntry("CamPosIncrease", 2f, "Camera Position Increase", $"Controls how far away the Camera is from the Player's Center Point{Environment.NewLine}Default: 2");
-            PrefCamPosFalloff = CameraPositionCategory.CreateEntry("CamPosFalloff", 0.25f, "Camera Position Falloff", $"Controls how fast the Camera Position Increase amount falls off{Environment.NewLine}Default: 0.25");
-            PrefCamPosBuffer = CameraPositionCategory.CreateEntry("CamPosBuffer", 0.1f, "Camera Position Buffer", $"Determines if the Camera needs to move (small but not 0 is best){Environment.NewLine}Default: 0.1");
-            PrefAllowedHeightScaler = CameraPositionCategory.CreateEntry("AllowedHeightScaler", 1.5f, "Allowed Height Scaler", $"Scaled the Allowed Height of the Camera in comparison to the Player's Center Point Height (smaller = higher, bigger = lower){Environment.NewLine}Default: 1.5");
-
+            PrefPlayerCenterSmoothing = CameraPositionCategory.CreateEntry("PlayerCenterSmoothing", 6f, "Player Center Smoothing", $"Controls how Smooth the Look at Center of the Players moves{Environment.NewLine}Default: 6", validator: new ValueRange<float>(0, float.MaxValue));
+            PrefCamPosIncrease = CameraPositionCategory.CreateEntry("CamPosIncrease", 2f, "Camera Position Increase", $"Controls how far away the Camera is from the Player's Center Point{Environment.NewLine}Default: 2", validator: new ValueRange<float>(0, float.MaxValue));
+            PrefCamPosFalloff = CameraPositionCategory.CreateEntry("CamPosFalloff", 0.25f, "Camera Position Falloff", $"Controls how fast the Camera Position Increase amount falls off{Environment.NewLine}Default: 0.25", validator: new ValueRange<float>(0, float.MaxValue));
+            PrefCamPosBuffer = CameraPositionCategory.CreateEntry("CamPosBuffer", 0.1f, "Camera Position Buffer", $"Determines if the Camera needs to move (small but not 0 is best){Environment.NewLine}Default: 0.1", validator: new ValueRange<float>(0, float.MaxValue));
+            PrefAllowedHeightScaler = CameraPositionCategory.CreateEntry("AllowedHeightScaler", 1.5f, "Allowed Height Scaler", $"Scaled the Allowed Height of the Camera in comparison to the Player's Center Point Height (smaller = higher, bigger = lower){Environment.NewLine}Default: 1.5", validator: new ValueRange<float>(0, float.MaxValue));
 
             PrefCamSpectate.ResetToDefault(); //Ignore saved setting to emulate ModUI DoNotSave tag;
             StoreLastSavedPrefs();
