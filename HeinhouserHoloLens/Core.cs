@@ -7,7 +7,7 @@ namespace HeinhouserHoloLens
     public static class BuildInfo
     {
         public const string ModName = "HeinhouserHoloLens";
-        public const string ModVersion = "1.1.5";
+        public const string ModVersion = "1.1.6";
         public const string Author = "UlvakSkillz";
     }
 
@@ -21,7 +21,7 @@ namespace HeinhouserHoloLens
 		public override void OnInitializeMelon()
 		{
 			Preferences.InitPrefs();
-			UI.Register(this, Preferences.HoloLensCategory, Preferences.CameraSpectateCategory, Preferences.CameraMovementCategory, Preferences.CameraPositionCategory).OnModSaved += Save;
+			UI.Register((MelonBase)this, Preferences.HoloLensCategory, Preferences.CameraSpectateCategory, Preferences.CameraMovementCategory, Preferences.CameraPositionCategory).OnModSaved += Save;
 		}
 
 		public override void OnSceneWasLoaded(int buildIndex, string sceneName)
