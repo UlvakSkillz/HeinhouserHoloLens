@@ -14,16 +14,16 @@ namespace HeinhouserHoloLens
 	{
 		internal static string SettingsToString()
 		{
-			return $"{(Core.isMatchmaking ? $"player1 = 0, player2 = 1, " : (Core.currentScene == "Park" ? $"parkPlayer1 = {Preferences.PrefCamPlayer1}, parkPlayer2 = {Preferences.PrefCamPlayer2}, " : ""))}"
-				+ $"cameraMoveSpeed = {Preferences.PrefCameraMoveSpeed}"
-				+ $", cameraOrbitSpeed = {Preferences.PrefCameraOrbitSpeed}"
-				+ $", cameraPositionCorrectionScaler = {Preferences.PrefCamPosCorrection}"
-				+ $", CameraDistanceFromMapCenterAllowed = {Preferences.PrefMaxCenterDist}"
-				+ $", playerCenterSmoothing = {Preferences.PrefPlayerCenterSmoothing}"
-				+ $", cameraPositionIncrease = {Preferences.PrefCamPosIncrease}"
-				+ $", cameraPositionFalloff = {Preferences.PrefCamPosFalloff}"
-				+ $", cameraPositionBuffer = {Preferences.PrefCamPosBuffer}"
-				+ $", allowedHeightScaler = {Preferences.PrefAllowedHeightScaler}";
+			return $"{(Core.isMatchmaking ? $"player1 = 0, player2 = 1, " : (Core.currentScene == "Park" ? $"parkPlayer1 = {Preferences.PrefCamPlayer1.Value}, parkPlayer2 = {Preferences.PrefCamPlayer2.Value}, " : ""))}"
+				+ $"cameraMoveSpeed = {Preferences.PrefCameraMoveSpeed.Value}"
+				+ $", cameraOrbitSpeed = {Preferences.PrefCameraOrbitSpeed.Value}"
+				+ $", cameraPositionCorrectionScaler = {Preferences.PrefCamPosCorrection.Value}"
+				+ $", CameraDistanceFromMapCenterAllowed = {Preferences.PrefMaxCenterDist.Value}"
+				+ $", playerCenterSmoothing = {Preferences.PrefPlayerCenterSmoothing.Value}"
+				+ $", cameraPositionIncrease = {Preferences.PrefCamPosIncrease.Value}"
+				+ $", cameraPositionFalloff = {Preferences.PrefCamPosFalloff.Value}"
+				+ $", cameraPositionBuffer = {Preferences.PrefCamPosBuffer.Value}"
+				+ $", allowedHeightScaler = {Preferences.PrefAllowedHeightScaler.Value}";
 		}
 	}
 
@@ -161,7 +161,7 @@ namespace HeinhouserHoloLens
                 activeHoloLens.transform.localPosition = Vector3.zero;
                 activeHoloLens.transform.localRotation = Quaternion.identity;
                 //if chance for HeadShot succeeds, change to head shown
-                if ((Preferences.PrefHeadChance.Value != 0) && (Core.random.Next(1, 101) <= Preferences.PrefHeadChance.Value))
+                if (Core.random.Next(0, 100) < Preferences.PrefHeadChance.Value)
                 {
                     IsActiveHoloLensNormal = false;
                     activeHoloLens.transform.GetChild(0).GetChild(0).gameObject.SetActive(false); //green lens
@@ -187,9 +187,9 @@ namespace HeinhouserHoloLens
 
             LCKCameraController lckCameraController = PlayerManager.instance.localPlayer.Controller.PlayerLIV.LckTablet.lckCameraController;
             lckCameraController.CameraModeChanged(CameraMode.Selfie);
-            lckCameraController.SelfieFOVDoubleButton.ApplySavedData(90);
-            lckCameraController.SelfieSmoothingDoubleButton.ApplySavedData(0);
-            if (lckCameraController.CurrentCameraOrientation == LckCameraOrientation.Portrait) { lckCameraController._orientationButton.RPC_OnPressed(); }
+            lckCameraController.SelfieFOVDoubleButton.ApplySavedData(Preferences.PrefCamFOV.Value);
+            lckCameraController.SelfieSmoothingDoubleButton.ApplySavedData(0); // 0 camera smoothing since we lerp 4 times per loop
+            if (lckCameraController.CurrentCameraOrientation != Preferences.PrefCamMode.Value) { lckCameraController._orientationButton.RPC_OnPressed(); }
             yield return new WaitForSeconds(0.25f);
 
             PlayerManager.instance.localPlayer.Controller.PlayerLIV.HideTablet();
@@ -200,7 +200,7 @@ namespace HeinhouserHoloLens
 		private static IEnumerator RunSpectateCamera(int player1 = 0, int player2 = 1)
 		{
 			Melon<Core>.Logger.Msg($"Playing Spectate Mode: {CameraSettings.SettingsToString()}");
-			//turn off for a tick in case of another camera control == being done
+			//turn off for a tick in case of another camera control is being done
 			if (cameraIsBeingControlled)
 			{
 				cameraIsBeingControlled = false;

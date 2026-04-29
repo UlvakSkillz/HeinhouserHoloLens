@@ -1,3 +1,4 @@
+using Il2CppLiv.Lck;
 using MelonLoader;
 using MelonLoader.Preferences;
 
@@ -16,6 +17,8 @@ namespace HeinhouserHoloLens
 		internal static MelonPreferences_Entry<int> PrefHeadChance;
 
 		internal static MelonPreferences_Category CameraSpectateCategory;
+		internal static MelonPreferences_Entry<int> PrefCamFOV;
+		internal static MelonPreferences_Entry<LckCameraOrientation> PrefCamMode;
 		internal static MelonPreferences_Entry<bool> PrefCamSpectate;
 		internal static MelonPreferences_Entry<int> PrefCamPlayer1;
 		internal static MelonPreferences_Entry<int> PrefCamPlayer2;
@@ -47,15 +50,17 @@ namespace HeinhouserHoloLens
             PrefHeadChance = HoloLensCategory.CreateEntry("Head Camera Chance", 1, "Head Camera Chance Percent", $"Changes the % chance to replace the HoloLens with a Player Head", validator: new ValueRange<int>(0, int.MaxValue));
 
             //Park settings
-            CameraSpectateCategory = MelonPreferences.CreateCategory("Camera", "Camera Settings");
+            CameraSpectateCategory = MelonPreferences.CreateCategory("HoloLensCamera", "Camera Settings");
             CameraSpectateCategory.SetFilePath(Path.Combine(USER_DATA, CONFIG_FILE));
 
+            PrefCamFOV = CameraSpectateCategory.CreateEntry("CamFOV", 90, "Camera FOV", "Sets the Camera FOV for HoloLens", validator: new ValueRange<int>(0, 360));
+            PrefCamMode = CameraSpectateCategory.CreateEntry("CamMode", LckCameraOrientation.Landscape, "Camera Mode", "Sets the Camera Mode for HoloLens", validator: new ValueRange<LckCameraOrientation>(LckCameraOrientation.Portrait, LckCameraOrientation.Landscape));
             PrefCamSpectate = CameraSpectateCategory.CreateEntry("CamSpectate", false, "Camera Spectate Activate", "Toggles On/Off Spectating in non-Matchmaking Maps");
             PrefCamPlayer1 = CameraSpectateCategory.CreateEntry("CamPlayer1", 0, "Camera Player 1", $"Selects what Player to Spectate as Player 1 (0 = You, 1 = Oldest Remote Player, 2 = 2nd Oldest Remote Player, etc){Environment.NewLine}Defaults to Local Player if invalid", validator: new ValueRange<int>(0, int.MaxValue));
             PrefCamPlayer2 = CameraSpectateCategory.CreateEntry("CamPlayer2", 1, "Camera Player 2", $"Selects what Player to Spectate as Player 2 (0 = You, 1 = Oldest Remote Player, 2 = 2nd Oldest Remote Player, etc){Environment.NewLine}Defaults to Local Player if invalid", validator: new ValueRange<int>(0, int.MaxValue));
 
             //Camera Movement Settings
-            CameraMovementCategory = MelonPreferences.CreateCategory("Camera Movement", "Camera Movement");
+            CameraMovementCategory = MelonPreferences.CreateCategory("HoloLensCameraMovement", "Camera Movement");
             CameraMovementCategory.SetFilePath(Path.Combine(USER_DATA, CONFIG_FILE));
 
             PrefCameraMoveSpeed = CameraMovementCategory.CreateEntry("CameraMoveSpeed", 6.5f, "Move Speed", $"Controls how fast the Camera moves Forwards/Backwards and Up/Down{Environment.NewLine}Default: 6.5", validator: new ValueRange<float>(0, float.MaxValue));
@@ -64,7 +69,7 @@ namespace HeinhouserHoloLens
             PrefMaxCenterDist = CameraMovementCategory.CreateEntry("MaxCenterDist", 10.25f, "Max Center Distance", $"Controls how far the Camera can move from the Center of the Matchmaking Map{Environment.NewLine}Default: 10.25", validator: new ValueRange<float>(0, float.MaxValue));
 
             //Camera Position Settings
-            CameraPositionCategory = MelonPreferences.CreateCategory("Camera Position", "Camera Position");
+            CameraPositionCategory = MelonPreferences.CreateCategory("HoloLensCameraPosition", "Camera Position");
             CameraPositionCategory.SetFilePath(Path.Combine(USER_DATA, CONFIG_FILE));
 
             PrefPlayerCenterSmoothing = CameraPositionCategory.CreateEntry("PlayerCenterSmoothing", 6f, "Player Center Smoothing", $"Controls how Smooth the Look at Center of the Players moves{Environment.NewLine}Default: 6", validator: new ValueRange<float>(0, float.MaxValue));
