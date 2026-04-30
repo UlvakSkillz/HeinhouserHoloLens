@@ -98,7 +98,15 @@ namespace HeinhouserHoloLens
                 || Preferences.IsPrefChanged(Preferences.PrefCamPosFalloff)
                 || Preferences.IsPrefChanged(Preferences.PrefCamPosBuffer)
                 || Preferences.IsPrefChanged(Preferences.PrefAllowedHeightScaler);
-
+            if (Preferences.IsPrefChanged(Preferences.PrefCamFOV))
+            { //if FOV changed, update it
+                PlayerManager.instance.localPlayer.Controller.PlayerLIV.LckTablet.lckCameraController.SelfieFOVDoubleButton.ApplySavedData(Preferences.PrefCamFOV.Value);
+            }
+            if (Preferences.IsPrefChanged(Preferences.PrefCamMode))
+            { //if Mode changed
+                LCKCameraController lckCameraController = PlayerManager.instance.localPlayer.Controller.PlayerLIV.LckTablet.lckCameraController;
+                if (lckCameraController.CurrentCameraOrientation != Preferences.PrefCamMode.Value) { lckCameraController._orientationButton.RPC_OnPressed(); }
+            }
             if (settingsChanged)
 			{//if camera settings changed, restart spectator camera to apply new settings if currently spectating
                 if (Preferences.PrefEnable.Value && Core.isMatchmaking && cameraIsBeingControlled) { StartSpectate(); }
